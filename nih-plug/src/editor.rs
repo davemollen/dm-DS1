@@ -13,7 +13,7 @@ use nih_plug_vizia::vizia::{
   modifiers::{LayoutModifiers, TextModifiers, StyleModifiers}, model::Model
 };
 use std::sync::Arc;
-use crate::repeat_parameters::RepeatParameters;
+use crate::ds1_parameters::DS1Parameters;
 
 const STYLE: &str = include_str!("./editor/style.css");
 
@@ -23,7 +23,7 @@ pub(crate) fn default_state() -> Arc<ViziaState> {
 }
 
 pub(crate) fn create(
-    params: Arc<RepeatParameters>,
+    params: Arc<DS1Parameters>,
     editor_state: Arc<ViziaState>,
 ) -> Option<Box<dyn Editor>> {
     create_vizia_editor(editor_state, ViziaTheming::Custom, move |cx, gui_context| { 
@@ -38,46 +38,36 @@ pub(crate) fn create(
         HStack::new(cx, |cx| {
           ParamKnob::new(
             cx,
-            params.freq.name(),
+            params.tone.name(),
             UiData::params,
-            params.freq.as_ptr(),
-            |params| &params.freq,
+            params.tone.as_ptr(),
+            |params| &params.tone,
             |param_ptr, val| ParamChangeEvent::SetParam(param_ptr, val),
             ParamKnobSize::Regular
           );
           
           ParamKnob::new(
             cx,
-            params.repeats.name(),
+            params.level.name(),
             UiData::params,
-            params.repeats.as_ptr(),
-            |params| &params.repeats,
+            params.level.as_ptr(),
+            |params| &params.level,
             |param_ptr, val| ParamChangeEvent::SetParam(param_ptr, val),
             ParamKnobSize::Regular
           );
           
           ParamKnob::new(
             cx,
-            params.feedback.name(),
+            params.dist.name(),
             UiData::params,
-            params.feedback.as_ptr(),
-            |params| &params.feedback,
+            params.dist.as_ptr(),
+            |params| &params.dist,
             |param_ptr, val| ParamChangeEvent::SetParam(param_ptr, val),
             ParamKnobSize::Regular
           );
-          
-          ParamKnob::new(
-            cx,
-            params.skew.name(),
-            UiData::params,
-            params.skew.as_ptr(),
-            |params| &params.skew,
-            |param_ptr, val| ParamChangeEvent::SetParam(param_ptr, val),
-            ParamKnobSize::Regular
-          ).top(Pixels(12.0));
         }).child_space(Stretch(1.0)).col_between(Pixels(8.0));
     
-        Label::new(cx, "dm-Repeat")
+        Label::new(cx, "DS1")
           .font_size(22.0)
           .font_weight(FontWeightKeyword::Bold)
           .border_radius(Pixels(16.0))
