@@ -6,6 +6,7 @@ mod clipper;
 use clipper::Clipper;
 mod tone;
 use tone::Tone;
+mod oversample;
 
 pub struct DS1 {
   transistor_booster: TransistorBooster,

@@ -21,7 +21,7 @@ impl Default for DmDS1 {
 }
 
 impl Plugin for DmDS1 {
-  const NAME: &'static str = "dm-DS1";
+  const NAME: &'static str = "dm-DS1-fir";
   const VENDOR: &'static str = "DM";
   const URL: &'static str = "https://github.com/davemollen/dm-DS1";
   const EMAIL: &'static str = "davemollen@gmail.com";
@@ -96,7 +96,7 @@ impl Plugin for DmDS1 {
 }
 
 impl ClapPlugin for DmDS1 {
-  const CLAP_ID: &'static str = "dm-DS1";
+  const CLAP_ID: &'static str = "dm-DS1-fir";
   const CLAP_DESCRIPTION: Option<&'static str> = Some("A distortion plugin");
   const CLAP_MANUAL_URL: Option<&'static str> = Some(Self::URL);
   const CLAP_SUPPORT_URL: Option<&'static str> = None;
@@ -109,7 +109,7 @@ impl ClapPlugin for DmDS1 {
 }
 
 impl Vst3Plugin for DmDS1 {
-  const VST3_CLASS_ID: [u8; 16] = *b"dm-DS1..........";
+  const VST3_CLASS_ID: [u8; 16] = *b"dm-DS1-fir......";
   const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[
     Vst3SubCategory::Fx, 
     Vst3SubCategory::Mono,
