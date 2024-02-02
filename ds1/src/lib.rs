@@ -1,3 +1,4 @@
+#![feature(portable_simd)]
 mod transistor_booster;
 use transistor_booster::TransistorBooster;
 mod op_amp;
@@ -6,7 +7,6 @@ mod clipper;
 use clipper::Clipper;
 mod tone;
 use tone::Tone;
-mod oversample;
 
 pub struct DS1 {
   transistor_booster: TransistorBooster,

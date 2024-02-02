@@ -1,9 +1,10 @@
 mod lookup_table;
 use lookup_table::LOOKUP_TABLE;
-use super::oversample::Oversample;
+mod oversample;
+use oversample::Oversample;
 
 pub struct Clipper {
-  oversample: Oversample<2>,
+  oversample: Oversample<8>,
   lookup_table: [f32; 4096]
 }
 
@@ -13,6 +14,15 @@ impl Clipper {
       oversample: Oversample::new(),
       lookup_table: LOOKUP_TABLE
     }
+  }
+
+  pub fn process(&mut self, input: f32) -> f32 {
+    let lookup_table = self.lookup_table;
+
+    self.oversample.process(
+      input, 
+      |x| Self::non_linear_process(x, lookup_table)
+    )
   }
 
   fn linear_interp(index: usize, lookup_table: [f32; 4096], mix: f32) -> f32 {
@@ -37,12 +47,4 @@ impl Clipper {
       Self::linear_interp(index as usize, lookup_table, mix)
     }
   } 
-
-  pub fn process(&mut self, input: f32) -> f32 {
-    let lookup_table = self.lookup_table;
-
-    self.oversample.upsample(input);
-    self.oversample.process(|x| Self::non_linear_process(x, lookup_table));
-    self.oversample.downsample()
-  }
 }
