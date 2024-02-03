@@ -1,22 +1,24 @@
+use std::simd::f32x4;
+
 pub struct FirBuffer {
   index: usize,
-  buffer: Vec<f32>
+  buffer: Vec<f32x4>
 }
 
 impl FirBuffer {
   pub fn new(length: usize) -> Self {
     Self {
       index: 0,
-      buffer: vec![0.; length]
+      buffer: vec![f32x4::splat(0.); length]
     }
   }
 
-  pub fn write(&mut self, input: f32) {
+  pub fn write(&mut self, input: f32x4) {
     self.index = self.wrap(self.index + 1);
     self.buffer[self.index] = input;
   }
 
-  pub fn read(&self, i: usize) -> f32 {
+  pub fn read(&self, i: usize) -> f32x4 {
     let index = self.index - i + self.buffer.len();
     self.buffer[self.wrap(index)]
   }

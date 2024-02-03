@@ -1,10 +1,12 @@
 mod lookup_table;
+use std::simd::f32x4;
+
 use lookup_table::LOOKUP_TABLE;
 mod oversample;
 use oversample::Oversample;
 
 pub struct Clipper {
-  oversample: Oversample<8>,
+  oversample: Oversample<4>,
   lookup_table: [f32; 4096]
 }
 
@@ -21,7 +23,12 @@ impl Clipper {
 
     self.oversample.process(
       input, 
-      |x| Self::non_linear_process(x, lookup_table)
+      |x| {
+        let array = x.to_array();
+        f32x4::from_array(array.map(|x| {
+          Self::non_linear_process(x, lookup_table)
+        }))
+      }
     )
   }
 
