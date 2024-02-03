@@ -6,20 +6,20 @@ use fir_buffer::FirBuffer;
 pub struct Oversample<const N: usize> {
   upsample_buffer: FirBuffer,
   downsample_buffer: FirBuffer,
-  coefficients: [f32; 64]
+  coefficients: [f32; 32]
 }
 
 impl<const N: usize> Oversample<N> {
   pub fn new() -> Self {
     Self {
-      upsample_buffer: FirBuffer::new(64 / N),
-      downsample_buffer: FirBuffer::new(64),
+      upsample_buffer: FirBuffer::new(32 / N),
+      downsample_buffer: FirBuffer::new(32),
       coefficients: match N {
         2 => HALF_BAND,
         4 => QUARTER_BAND,
         8 => EIGHTH_BAND,
         16 => SIXTEENTH_BAND,
-        _ => HALF_BAND
+        _ => panic!("Oversampling ratio must be either 2, 4, 8 or 16.")
       }  
     }
   }
