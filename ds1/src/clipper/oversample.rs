@@ -1,6 +1,5 @@
 mod coefficients;
-use std::simd::{f32x32, f32x4, num::SimdFloat};
-
+use std::simd::{f32x4, num::SimdFloat};
 use coefficients::{QUARTER_BAND};
 mod fir_buffer;
 use fir_buffer::FirBuffer;

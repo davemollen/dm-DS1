@@ -1,7 +1,6 @@
-mod lowpass_filter;
-use lowpass_filter::LowpassFilter;
 mod highpass_filter;
 use highpass_filter::HighpassFilter;
+use crate::shared::lowpass_filter::LowpassFilter;
 
 pub struct Tone {
   lowpass: LowpassFilter,

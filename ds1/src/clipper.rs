@@ -1,57 +1,39 @@
-mod lookup_table;
-use std::simd::f32x4;
-
-use lookup_table::LOOKUP_TABLE;
+use std::simd::{f32x4, num::SimdFloat};
 mod oversample;
 use oversample::Oversample;
+use crate::shared::lowpass_filter::LowpassFilter;
 
 pub struct Clipper {
-  oversample: Oversample<4>,
-  lookup_table: [f32; 4096]
+  lowpass_filter: LowpassFilter,
+  oversample: Oversample<4>
 }
 
 impl Clipper {
-  pub fn new() -> Self {
+  pub fn new(sample_rate: f32) -> Self {
     Self {
+      lowpass_filter: LowpassFilter::new(sample_rate),
       oversample: Oversample::new(),
-      lookup_table: LOOKUP_TABLE
     }
   }
 
   pub fn process(&mut self, input: f32) -> f32 {
-    let lookup_table = self.lookup_table;
+    let filtered = self.lowpass_filter.process(input, 7230.);
 
     self.oversample.process(
-      input, 
+      filtered, 
       |x| {
-        let array = x.to_array();
-        f32x4::from_array(array.map(|x| {
-          Self::non_linear_process(x, lookup_table)
-        }))
+        // let squared_x = x * x;
+        // let numerator = x * (f32x4::splat(135135.) + squared_x * (f32x4::splat(17325.) + squared_x * (f32x4::splat(378.) + squared_x)));
+        // let denominator = f32x4::splat(135135.) + squared_x * (f32x4::splat(62370.) + squared_x * (f32x4::splat(3150.) + squared_x * f32x4::splat(28.)));
+        // numerator / denominator
+        let n = 6.;
+        let mapped = f32x4::to_array(x).map(|x| {
+          x / (1. + x.abs()).powf(n).powf(1. / n)
+        });
+        f32x4::from_array(
+          mapped
+        )
       }
-    )
+    ) * 0.558838
   }
-
-  fn linear_interp(index: usize, lookup_table: [f32; 4096], mix: f32) -> f32 {
-    let x = lookup_table[index];
-    let y = lookup_table[index + 1];
-    x * (1. - mix) + y * mix
-  }
-
-  fn non_linear_process(input: f32, lookup_table: [f32; 4096]) -> f32 {
-    let table_length: usize = lookup_table.len() - 1;
-
-    let phase: f32 = input * 0.111111 + 0.5;
-    let index = phase * table_length as f32;
-    let truncated_index = index.trunc();
-    let mix = index - truncated_index;
-    
-    if truncated_index >= table_length as f32 {
-      lookup_table[table_length]
-    } else if truncated_index <= 0. {
-      lookup_table[0]
-    } else {
-      Self::linear_interp(index as usize, lookup_table, mix)
-    }
-  } 
 }

@@ -22,7 +22,7 @@ impl LowpassFilter {
 	  let b1 = (radians - double_sample_rate) / b0;
 	  let a0 = radians / b0;
 	  let a1 = radians / b0;
-
+    
 	  let y = input * a0 + self.z;
 	  self.z = input * a1 - b1 * y;
     

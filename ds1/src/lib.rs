@@ -7,6 +7,9 @@ mod clipper;
 use clipper::Clipper;
 mod tone;
 use tone::Tone;
+pub mod shared {
+  pub mod lowpass_filter;
+}
 
 pub struct DS1 {
   transistor_booster: TransistorBooster,
@@ -20,7 +23,7 @@ impl DS1 {
     Self {
       transistor_booster: TransistorBooster::new(sample_rate),
       op_amp: OpAmp::new(sample_rate),
-      clipper: Clipper::new(),
+      clipper: Clipper::new(sample_rate),
       tone: Tone::new(sample_rate),
     }
   }
