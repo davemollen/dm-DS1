@@ -1,64 +1,71 @@
 mod coefficients;
-use std::simd::{f32x4, num::SimdFloat};
-use coefficients::{QUARTER_BAND};
+use coefficients::Coefficients;
+use std::{iter::Sum, ops::Mul, simd::num::SimdFloat};
 mod fir_buffer;
-use fir_buffer::FirBuffer;
+use fir_buffer::{FirBuffer, SimdFir};
+mod simd_type;
+use simd_type::SimdType;
 
-pub struct Oversample<const N: usize> {
-  upsample_buffer: FirBuffer,
-  downsample_buffer: FirBuffer,
-  coefficients: [f32x4; 8]
+pub struct Oversample<T> {
+  upsample_buffer: FirBuffer<T>,
+  downsample_buffer: FirBuffer<T>,
+  coefficients: Vec<T>,
+  oversample_factor: usize,
 }
 
-impl<const N: usize> Oversample<N> {
+impl<T: SimdType + Mul<T> + Sum<<T as Mul>::Output> + Copy + SimdFloat<Scalar = f32>> Oversample<T>
+where
+  Vec<T>: Coefficients,
+{
   pub fn new() -> Self {
+    let oversample_factor = T::oversample_factor();
+
     Self {
-      upsample_buffer: FirBuffer::new(32 / N),
+      upsample_buffer: FirBuffer::new(32 / oversample_factor),
       downsample_buffer: FirBuffer::new(32),
-      coefficients: match N {
-        // 2 => HALF_BAND,
-        4 => QUARTER_BAND,
-        // 8 => EIGHTH_BAND,
-        // 16 => SIXTEENTH_BAND,
-        _ => panic!("Oversampling ratio must be either 2, 4, 8 or 16.")
-      }  
+      coefficients: Coefficients::new(),
+      oversample_factor,
     }
   }
 
   pub fn process<F>(&mut self, input: f32, callback: F) -> f32
-    where F: Fn(f32x4) -> f32x4 {
-      let upsampled = self.upsample(input);
-      let processed = self.run_upsampled_process(upsampled, callback);
-      self.downsample(processed)
+  where
+    F: Fn(T) -> T,
+  {
+    let upsampled = self.upsample(input);
+    let processed = self.run_upsampled_process(upsampled, callback);
+    self.downsample(processed)
   }
 
-  pub fn upsample(&mut self, input: f32) -> f32x4 {
-    self.upsample_buffer.write(f32x4::splat(input * N as f32));
+  fn upsample(&mut self, input: f32) -> T {
+    self
+      .upsample_buffer
+      .write(SimdType::splat(input * self.oversample_factor as f32));
 
-    self.coefficients
+    self
+      .coefficients
       .iter()
       .enumerate()
-      .map(|(i, coeff)| {
-        self.upsample_buffer.read(i) * coeff
-      })
+      .map(|(i, coeff)| self.upsample_buffer.read(i) * *coeff)
       .sum()
   }
 
-  pub fn run_upsampled_process<F>(&mut self, input: f32x4, callback: F) -> f32x4
-    where F: Fn(f32x4) -> f32x4 {
-      callback(input)
+  fn run_upsampled_process<F>(&mut self, input: T, callback: F) -> T
+  where
+    F: Fn(T) -> T,
+  {
+    callback(input)
   }
 
-  pub fn downsample(&mut self, input: f32x4) -> f32 {
+  fn downsample(&mut self, input: T) -> f32 {
     self.downsample_buffer.write(input);
-    
-    self.coefficients
+
+    self
+      .coefficients
       .iter()
       .enumerate()
-      .map(|(i, coeff)| {
-        self.downsample_buffer.read(i) * coeff
-      })
-      .sum::<f32x4>()
+      .map(|(i, coeff)| self.downsample_buffer.read(i) * *coeff)
+      .sum::<T>()
       .reduce_sum()
   }
 }

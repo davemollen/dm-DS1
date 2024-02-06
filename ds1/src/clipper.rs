@@ -1,11 +1,11 @@
-use std::simd::{f32x4, num::SimdFloat};
+use std::simd::{f32x16, f32x4, f32x8};
 mod oversample;
-use oversample::Oversample;
 use crate::shared::lowpass_filter::LowpassFilter;
+use oversample::Oversample;
 
 pub struct Clipper {
   lowpass_filter: LowpassFilter,
-  oversample: Oversample<4>
+  oversample: Oversample<f32x16>,
 }
 
 impl Clipper {
@@ -19,21 +19,10 @@ impl Clipper {
   pub fn process(&mut self, input: f32) -> f32 {
     let filtered = self.lowpass_filter.process(input, 7230.);
 
-    self.oversample.process(
-      filtered, 
-      |x| {
-        // let squared_x = x * x;
-        // let numerator = x * (f32x4::splat(135135.) + squared_x * (f32x4::splat(17325.) + squared_x * (f32x4::splat(378.) + squared_x)));
-        // let denominator = f32x4::splat(135135.) + squared_x * (f32x4::splat(62370.) + squared_x * (f32x4::splat(3150.) + squared_x * f32x4::splat(28.)));
-        // numerator / denominator
-        let n = 6.;
-        let mapped = f32x4::to_array(x).map(|x| {
-          x / (1. + x.abs()).powf(n).powf(1. / n)
-        });
-        f32x4::from_array(
-          mapped
-        )
-      }
-    ) * 0.558838
+    self.oversample.process(filtered, |x| {
+      let n = 6.;
+      let mapped = f32x16::to_array(x).map(|x| x / (1. + x.abs()).powf(n).powf(1. / n));
+      f32x16::from_array(mapped)
+    }) * 0.558838
   }
 }
