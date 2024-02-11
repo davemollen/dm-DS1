@@ -1,4 +1,4 @@
-use std::simd::{f32x16, f32x4, f32x8};
+use std::simd::f32x16;
 mod oversample;
 use crate::shared::lowpass_filter::LowpassFilter;
 use oversample::Oversample;

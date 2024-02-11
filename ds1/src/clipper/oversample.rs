@@ -21,8 +21,8 @@ where
     let oversample_factor = T::oversample_factor();
 
     Self {
-      upsample_buffer: FirBuffer::new(32 / oversample_factor),
-      downsample_buffer: FirBuffer::new(32),
+      upsample_buffer: FirBuffer::new(16),
+      downsample_buffer: FirBuffer::new(16),
       coefficients: Coefficients::new(),
       oversample_factor,
     }
