@@ -1,11 +1,12 @@
-use std::simd::f32x16;
 mod oversample;
+use std::simd::{f32x8, StdFloat};
+
 use crate::shared::lowpass_filter::LowpassFilter;
 use oversample::Oversample;
 
 pub struct Clipper {
   lowpass_filter: LowpassFilter,
-  oversample: Oversample<f32x16>,
+  oversample: Oversample<f32x8>,
 }
 
 impl Clipper {
@@ -20,9 +21,11 @@ impl Clipper {
     let filtered = self.lowpass_filter.process(input, 7230.);
 
     self.oversample.process(filtered, |x| {
-      let n = 6.;
-      let mapped = f32x16::to_array(x).map(|x| x / (1. + x.abs()).powf(n).powf(1. / n));
-      f32x16::from_array(mapped)
+      let x2 = x * x;
+      let x3 = x2 * x;
+      let x5 = x3 * x2;
+      let a = x + (f32x8::splat(0.16489087) * x3) + (f32x8::splat(0.00985468) * x5);
+      a / (f32x8::splat(1.0) + (a * a)).sqrt()
     }) * 0.558838
   }
 }
