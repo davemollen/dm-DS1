@@ -1,19 +1,17 @@
 mod coefficients;
-use coefficients::Coefficients;
-use std::{iter::Sum, ops::Mul, simd::num::SimdFloat};
-mod fir_buffer;
-use fir_buffer::{FirBuffer, SimdFir};
+pub use coefficients::Coefficients;
+mod fir_filter;
+use fir_filter::{FirFilter, SimdFir};
 mod simd_type;
 use simd_type::SimdType;
 
 pub struct Oversample<T> {
-  upsample_buffer: FirBuffer<T>,
-  downsample_buffer: FirBuffer<T>,
-  coefficients: Vec<T>,
+  upsample_fir: FirFilter<T>,
+  downsample_fir: FirFilter<T>,
   oversample_factor: usize,
 }
 
-impl<T: SimdType + Mul<T> + Sum<<T as Mul>::Output> + Copy + SimdFloat<Scalar = f32>> Oversample<T>
+impl<T: SimdType> Oversample<T>
 where
   Vec<T>: Coefficients,
 {
@@ -21,9 +19,8 @@ where
     let oversample_factor = T::oversample_factor();
 
     Self {
-      upsample_buffer: FirBuffer::new(16),
-      downsample_buffer: FirBuffer::new(16),
-      coefficients: Coefficients::new(),
+      upsample_fir: FirFilter::new(16),
+      downsample_fir: FirFilter::new(16),
       oversample_factor,
     }
   }
@@ -39,15 +36,8 @@ where
 
   fn upsample(&mut self, input: f32) -> T {
     self
-      .upsample_buffer
-      .write(SimdType::splat(input * self.oversample_factor as f32));
-
-    self
-      .coefficients
-      .iter()
-      .enumerate()
-      .map(|(i, coeff)| self.upsample_buffer.read(i) * *coeff)
-      .sum()
+      .upsample_fir
+      .process(SimdType::splat(input * self.oversample_factor as f32))
   }
 
   fn run_upsampled_process<F>(&mut self, input: T, callback: F) -> T
@@ -58,14 +48,6 @@ where
   }
 
   fn downsample(&mut self, input: T) -> f32 {
-    self.downsample_buffer.write(input);
-
-    self
-      .coefficients
-      .iter()
-      .enumerate()
-      .map(|(i, coeff)| self.downsample_buffer.read(i) * *coeff)
-      .sum::<T>()
-      .reduce_sum()
+    self.downsample_fir.process(input).reduce_sum()
   }
 }

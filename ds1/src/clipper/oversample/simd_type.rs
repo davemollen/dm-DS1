@@ -1,6 +1,12 @@
-use std::simd::{f32x16, f32x2, f32x4, f32x8};
+use std::{
+  iter::Sum,
+  ops::Mul,
+  simd::{f32x16, f32x2, f32x4, f32x8, num::SimdFloat},
+};
 
-pub trait SimdType {
+pub trait SimdType:
+  Clone + Copy + Mul<Self> + Sum<<Self as Mul>::Output> + SimdFloat<Scalar = f32>
+{
   fn oversample_factor() -> usize;
   fn splat(input: f32) -> Self;
 }
