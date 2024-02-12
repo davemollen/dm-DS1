@@ -29,11 +29,11 @@ impl DS1 {
   }
 
   pub fn process(&mut self, input: f32, tone: f32, level: f32, dist: f32) -> f32 {
-    let booster_output = self.transistor_booster.process(input, 66.834392);
+    let booster_output = self.transistor_booster.process(input, 63.095734);
     let op_amp_output = self.op_amp.process(booster_output, dist);
     let clip_output = self.clipper.process(op_amp_output);
     let tone_output = self.tone.process(clip_output, tone);
-    
+
     tone_output * level
   }
 }
