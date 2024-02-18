@@ -1,6 +1,6 @@
-use std::{sync::Arc, f32::consts::FRAC_1_SQRT_2};
-use nih_plug::prelude::*;
 use ds1::DS1;
+use nih_plug::prelude::*;
+use std::{f32::consts::FRAC_1_SQRT_2, sync::Arc};
 mod ds1_parameters;
 use ds1_parameters::DS1Parameters;
 mod editor;
@@ -21,12 +21,12 @@ impl Default for DmDS1 {
 }
 
 impl Plugin for DmDS1 {
-  const NAME: &'static str = "dm-DS1-fir";
+  const NAME: &'static str = "dm-DS1";
   const VENDOR: &'static str = "DM";
   const URL: &'static str = "https://github.com/davemollen/dm-DS1";
   const EMAIL: &'static str = "davemollen@gmail.com";
   const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-  
+
   const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[AudioIOLayout {
     main_input_channels: NonZeroU32::new(2),
     main_output_channels: NonZeroU32::new(2),
@@ -34,7 +34,7 @@ impl Plugin for DmDS1 {
   }];
   const MIDI_INPUT: MidiConfig = MidiConfig::None;
   const SAMPLE_ACCURATE_AUTOMATION: bool = true;
-  
+
   // More advanced plugins can use this to run expensive background tasks. See the field's
   // documentation for more information. `()` means that the plugin does not have any background
   // tasks.
@@ -79,7 +79,7 @@ impl Plugin for DmDS1 {
         (input_left + input_right) * FRAC_1_SQRT_2,
         tone,
         level,
-        dist
+        dist,
       );
 
       let left_channel_out = channel_samples.get_mut(0).unwrap();
@@ -96,7 +96,7 @@ impl Plugin for DmDS1 {
 }
 
 impl ClapPlugin for DmDS1 {
-  const CLAP_ID: &'static str = "dm-DS1-fir";
+  const CLAP_ID: &'static str = "dm-DS1";
   const CLAP_DESCRIPTION: Option<&'static str> = Some("A distortion plugin");
   const CLAP_MANUAL_URL: Option<&'static str> = Some(Self::URL);
   const CLAP_SUPPORT_URL: Option<&'static str> = None;
@@ -104,16 +104,16 @@ impl ClapPlugin for DmDS1 {
     ClapFeature::AudioEffect,
     ClapFeature::Mono,
     ClapFeature::Utility,
-    ClapFeature::Distortion
+    ClapFeature::Distortion,
   ];
 }
 
 impl Vst3Plugin for DmDS1 {
-  const VST3_CLASS_ID: [u8; 16] = *b"dm-DS1-fir......";
+  const VST3_CLASS_ID: [u8; 16] = *b"dm-DS1..........";
   const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[
-    Vst3SubCategory::Fx, 
+    Vst3SubCategory::Fx,
     Vst3SubCategory::Mono,
-    Vst3SubCategory::Distortion
+    Vst3SubCategory::Distortion,
   ];
 }
 

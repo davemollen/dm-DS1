@@ -10,12 +10,15 @@ use tone::Tone;
 pub mod shared {
   pub mod lowpass_filter;
 }
+mod smooth_parameters;
+use smooth_parameters::SmoothParameters;
 
 pub struct DS1 {
   transistor_booster: TransistorBooster,
   op_amp: OpAmp,
   clipper: Clipper,
   tone: Tone,
+  smooth_parameters: SmoothParameters,
 }
 
 impl DS1 {
@@ -25,10 +28,12 @@ impl DS1 {
       op_amp: OpAmp::new(sample_rate),
       clipper: Clipper::new(sample_rate),
       tone: Tone::new(sample_rate),
+      smooth_parameters: SmoothParameters::new(sample_rate),
     }
   }
 
   pub fn process(&mut self, input: f32, tone: f32, level: f32, dist: f32) -> f32 {
+    let (tone, level, dist) = self.smooth_parameters.process(tone, level, dist);
     let booster_output = self.transistor_booster.process(input, 63.095734);
     let op_amp_output = self.op_amp.process(booster_output, dist);
     let clip_output = self.clipper.process(op_amp_output);
