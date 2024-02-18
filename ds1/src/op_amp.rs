@@ -14,7 +14,7 @@ impl OpAmp {
   }
 
   pub fn process(&mut self, input: f32, dist: f32) -> f32 {
-    let dist = dist.min(0.00001);
+    let dist = dist.max(0.00001);
     let double_sample_rate = self.sample_rate * 2.;
     let squared_double_sample_rate = double_sample_rate * double_sample_rate;
 

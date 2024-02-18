@@ -13,7 +13,7 @@ impl SmoothParameters {
   }
 
   pub fn process(&mut self, tone: f32, level: f32, dist: f32) -> (f32, f32, f32) {
-    let ramp_time = 100.;
+    let ramp_time = 50.;
     (
       self.filters[0].process(tone, ramp_time),
       self.filters[1].process(level, ramp_time),
