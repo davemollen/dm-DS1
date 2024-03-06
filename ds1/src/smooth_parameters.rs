@@ -1,6 +1,8 @@
 mod ramp_smooth;
 use ramp_smooth::RampSmooth;
 
+const RAMP_TIME: f32 = 50.;
+
 pub struct SmoothParameters {
   filters: [RampSmooth; 3],
 }
@@ -13,11 +15,10 @@ impl SmoothParameters {
   }
 
   pub fn process(&mut self, tone: f32, level: f32, dist: f32) -> (f32, f32, f32) {
-    let ramp_time = 50.;
     (
-      self.filters[0].process(tone, ramp_time),
-      self.filters[1].process(level, ramp_time),
-      self.filters[2].process(dist, ramp_time),
+      self.filters[0].process(tone, RAMP_TIME),
+      self.filters[1].process(level, RAMP_TIME),
+      self.filters[2].process(dist, RAMP_TIME),
     )
   }
 }
