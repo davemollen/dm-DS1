@@ -1,6 +1,6 @@
 use ds1::DS1;
 use nih_plug::prelude::*;
-use std::{f32::consts::FRAC_1_SQRT_2, sync::Arc};
+use std::sync::Arc;
 mod ds1_parameters;
 use ds1_parameters::DS1Parameters;
 mod editor;
@@ -28,8 +28,8 @@ impl Plugin for DmDS1 {
   const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
   const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[AudioIOLayout {
-    main_input_channels: NonZeroU32::new(2),
-    main_output_channels: NonZeroU32::new(2),
+    main_input_channels: NonZeroU32::new(1),
+    main_output_channels: NonZeroU32::new(1),
     ..AudioIOLayout::const_default()
   }];
   const MIDI_INPUT: MidiConfig = MidiConfig::None;
@@ -70,22 +70,10 @@ impl Plugin for DmDS1 {
     let dist = self.params.dist.value();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
-      let left_channel_in = channel_samples.get_mut(0).unwrap();
-      let input_left = *left_channel_in;
-      let right_channel_in = channel_samples.get_mut(1).unwrap();
-      let input_right = *right_channel_in;
-
-      let repeat_output = self.ds1.process(
-        (input_left + input_right) * FRAC_1_SQRT_2,
-        tone,
-        level,
-        dist,
-      );
-
-      let left_channel_out = channel_samples.get_mut(0).unwrap();
-      *left_channel_out = repeat_output;
-      let right_channel_out = channel_samples.get_mut(1).unwrap();
-      *right_channel_out = repeat_output;
+      let input = channel_samples.get_mut(0).unwrap();
+      let ds1_output = self.ds1.process(*input, tone, level, dist);
+      let output = channel_samples.get_mut(0).unwrap();
+      *output = ds1_output;
     });
     ProcessStatus::Normal
   }
