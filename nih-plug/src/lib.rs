@@ -70,10 +70,9 @@ impl Plugin for DmDS1 {
     let dist = self.params.dist.value();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
-      let input = channel_samples.get_mut(0).unwrap();
-      let ds1_output = self.ds1.process(*input, tone, level, dist);
-      let output = channel_samples.get_mut(0).unwrap();
-      *output = ds1_output;
+      let sample = channel_samples.iter_mut().next().unwrap();
+      let ds1_output = self.ds1.process(*sample, tone, level, dist);
+      *sample = ds1_output;
     });
     ProcessStatus::Normal
   }
