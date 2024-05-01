@@ -15,13 +15,13 @@ impl LowpassFilter {
     let sample_period = double_sample_rate.recip();
     let radians = (frequency * TAU * sample_period).tan() * double_sample_rate;
 
-    let b0 = radians + double_sample_rate;
-    let b1 = (radians - double_sample_rate) / b0;
-    let a0 = radians / b0;
-    let a1 = radians / b0;
+    let a0 = radians + double_sample_rate;
+    let a1 = (radians - double_sample_rate) / a0;
+    let b0 = radians / a0;
+    let b1 = radians / a0;
 
-    let y = input * a0 + self.z;
-    self.z = input * a1 - b1 * y;
+    let y = input * b0 + self.z;
+    self.z = input * b1 - a1 * y;
 
     y
   }
