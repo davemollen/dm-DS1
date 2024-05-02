@@ -26,6 +26,6 @@ impl Clipper {
       let a = x + f32x8::splat(0.16489087) * x3 + f32x8::splat(0.00985468) * x5;
       a / (f32x8::splat(1.0) + a * a).sqrt()
     }) * 0.610992
-      * 0.354813 // -9dB
+      * 0.5
   }
 }

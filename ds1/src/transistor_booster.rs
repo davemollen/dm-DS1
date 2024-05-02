@@ -20,7 +20,8 @@ impl TransistorBooster {
 
   pub fn process(&mut self, input: f32) -> f32 {
     let freq1 = 3.077643;
-    let freq2 = 703.162476;
+    // let freq2 = 703.162476;
+    let freq2 = 600.;
     let gain = 63.095734;
 
     let radians1 = (freq1 * TAU * self.sample_period).tan() * self.double_sr;

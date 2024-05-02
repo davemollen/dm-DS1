@@ -22,8 +22,10 @@ impl OpAmp {
 
     let rt = dist * 100000.;
     let rb = ((1. - dist) * 100000.) + 4700.;
-    let cz = 0.00000047;
-    let cc = 0.0000000001;
+    // let cz = 0.00000047;
+    // let cc = 0.0000000001;
+    let cz = 0.000001;
+    let cc = 0.00000000025;
 
     let a = (rt * rb * cz * cc).recip();
     let c = (rt * cc).recip() + (rb * cz).recip();

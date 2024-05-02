@@ -13,7 +13,8 @@ def get_z_domain_coefficients(gain):
   sample_period = 1. / double_sample_rate
 
   freq1 = 3.077643
-  freq2 = 703.162476
+  # freq2 = 703.162476
+  freq2 = 600
   gain = 63.095734
 
   radians1 = np.tan(freq1 * np.pi * 2. * sample_period) * double_sample_rate
