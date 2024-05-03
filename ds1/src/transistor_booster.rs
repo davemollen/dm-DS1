@@ -1,48 +1,36 @@
 use std::f32::consts::TAU;
+mod bilinear_transform;
+use bilinear_transform::BilinearTransform;
+mod filter;
+use filter::Filter;
+
+const GAIN: f32 = 63.095734;
 
 pub struct TransistorBooster {
-  z1: f32,
-  z2: f32,
-  double_sr: f32,
-  sample_period: f32,
+  bilinear_transform: BilinearTransform,
+  filter: Filter,
 }
 
 impl TransistorBooster {
   pub fn new(sample_rate: f32) -> Self {
-    let double_sr = sample_rate * 2.;
     Self {
-      z1: 0.,
-      z2: 0.,
-      double_sr,
-      sample_period: double_sr.recip(),
+      bilinear_transform: BilinearTransform::new(sample_rate),
+      filter: Filter::new(),
     }
   }
 
   pub fn process(&mut self, input: f32) -> f32 {
-    let freq1 = 3.077643;
-    // let freq2 = 703.162476;
-    let freq2 = 600.;
-    let gain = 63.095734;
+    let s_domain_coefficients = self.get_s_domain_coefficients();
+    let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
+    self.filter.process(input, z_domain_coefficients) * GAIN
+  }
 
-    let radians1 = (freq1 * TAU * self.sample_period).tan() * self.double_sr;
-    let radians2 = (freq2 * TAU * self.sample_period).tan() * self.double_sr;
+  fn get_s_domain_coefficients(&self) -> (f32, [f32; 3]) {
+    let freq1 = 3.3862753849339;
+    let freq2 = 673.449;
+    let w1 = freq1 * TAU;
+    let w2 = freq2 * TAU;
 
-    let a = radians1 + self.double_sr;
-    let b = radians1 - self.double_sr;
-    let c = radians2 + self.double_sr;
-    let d = radians2 - self.double_sr;
-
-    let a0 = a * c;
-    let a1 = (a * d + b * c) / a0;
-    let a2 = b * d / a0;
-    let b0 = self.double_sr * self.double_sr / a0 * gain;
-    let b1 = b0 * -2.;
-    let b2 = b0;
-
-    let y = input * b0 + self.z1;
-    self.z1 = input * b1 + self.z2 - a1 * y;
-    self.z2 = input * b2 - a2 * y;
-
-    y
+    (1., [1., w1 + w2, w1 * w2])
   }
 }
