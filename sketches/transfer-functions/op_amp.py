@@ -18,8 +18,8 @@ def get_z_domain_coefficients(dist):
 
   rt = dist * 100000.
   rb = ((1. - dist) * 100000.) + 4700.
-  cz = 0.000001
-  cc = 0.00000000025
+  cz = 1e-6
+  cc = 2.5e-10
 
   a = 1. / (rt * rb * cz * cc)
   c = 1. / (rt * cc) + 1. / (rb * cz)
