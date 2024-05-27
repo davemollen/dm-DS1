@@ -5,7 +5,7 @@ use std::simd::{f32x8, StdFloat};
 
 pub struct Clipper {
   lowpass_filter: OnePoleFilter,
-  oversample: Oversample<f32x8>,
+  oversample: Oversample,
 }
 
 impl Clipper {
