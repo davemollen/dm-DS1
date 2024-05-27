@@ -1,17 +1,17 @@
 mod oversample;
-use crate::shared::lowpass_filter::LowpassFilter;
+use crate::shared::one_pole_filter::OnePoleFilter;
 use oversample::Oversample;
 use std::simd::{f32x8, StdFloat};
 
 pub struct Clipper {
-  lowpass_filter: LowpassFilter,
+  lowpass_filter: OnePoleFilter,
   oversample: Oversample<f32x8>,
 }
 
 impl Clipper {
   pub fn new(sample_rate: f32) -> Self {
     Self {
-      lowpass_filter: LowpassFilter::new(sample_rate),
+      lowpass_filter: OnePoleFilter::new(sample_rate),
       oversample: Oversample::new(),
     }
   }

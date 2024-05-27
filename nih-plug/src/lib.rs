@@ -10,6 +10,16 @@ struct DmDS1 {
   ds1: DS1,
 }
 
+impl DmDS1 {
+  pub fn get_params() -> (f32, f32, f32) {
+    (
+      self.params.tone.value(),
+      self.params.level.value(),
+      self.params.dist.value(),
+    )
+  }
+}
+
 impl Default for DmDS1 {
   fn default() -> Self {
     let params = Arc::new(DS1Parameters::default());
@@ -56,6 +66,8 @@ impl Plugin for DmDS1 {
     _context: &mut impl InitContext<Self>,
   ) -> bool {
     self.ds1 = DS1::new(buffer_config.sample_rate);
+    let (tone, level, dist) = self.get_params();
+    self.ds1.initialize_params(tone, level, dist);
     true
   }
 
@@ -65,9 +77,7 @@ impl Plugin for DmDS1 {
     _aux: &mut AuxiliaryBuffers,
     _context: &mut impl ProcessContext<Self>,
   ) -> ProcessStatus {
-    let tone = self.params.tone.value();
-    let level = self.params.level.value();
-    let dist = self.params.dist.value();
+    let (tone, level, dist) = self.get_params();
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();

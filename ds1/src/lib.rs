@@ -7,8 +7,9 @@ mod clipper;
 use clipper::Clipper;
 mod tone;
 use tone::Tone;
-pub mod shared {
-  pub mod lowpass_filter;
+mod shared {
+  pub mod float_ext;
+  pub mod one_pole_filter;
 }
 mod smooth_parameters;
 use smooth_parameters::SmoothParameters;
@@ -30,6 +31,10 @@ impl DS1 {
       tone: Tone::new(sample_rate),
       smooth_parameters: SmoothParameters::new(sample_rate),
     }
+  }
+
+  pub fn initialize_params(&mut self, tone: f32, level: f32, dist: f32) {
+    self.smooth_parameters.initialize(tone, level, dist);
   }
 
   pub fn process(&mut self, input: f32, tone: f32, level: f32, dist: f32) -> f32 {
