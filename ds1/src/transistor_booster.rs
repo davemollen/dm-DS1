@@ -4,6 +4,8 @@ use bilinear_transform::BilinearTransform;
 mod filter;
 use filter::Filter;
 
+const FREQ_1: f32 = 3.3862753849339;
+const FREQ_2: f32 = 673.449;
 const GAIN: f32 = 63.095734;
 
 pub struct TransistorBooster {
@@ -12,6 +14,11 @@ pub struct TransistorBooster {
 }
 
 impl TransistorBooster {
+  const W1: f32 = FREQ_1 * TAU;
+  const W2: f32 = FREQ_2 * TAU;
+  const A1: f32 = Self::W1 + Self::W2;
+  const A2: f32 = Self::W1 * Self::W2;
+
   pub fn new(sample_rate: f32) -> Self {
     Self {
       bilinear_transform: BilinearTransform::new(sample_rate),
@@ -26,11 +33,6 @@ impl TransistorBooster {
   }
 
   fn get_s_domain_coefficients(&self) -> (f32, [f32; 3]) {
-    let freq1 = 3.3862753849339;
-    let freq2 = 673.449;
-    let w1 = freq1 * TAU;
-    let w2 = freq2 * TAU;
-
-    (1., [1., w1 + w2, w1 * w2])
+    (1., [1., Self::A1, Self::A2])
   }
 }
