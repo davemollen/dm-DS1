@@ -1,4 +1,5 @@
-use std::simd::f32x8;
+mod coefficients;
+use {coefficients::Coefficients, std::simd::f32x8};
 
 pub struct FirFilter {
   buffer: Vec<f32x8>,
@@ -8,7 +9,8 @@ pub struct FirFilter {
 }
 
 impl FirFilter {
-  pub fn new(coefficients: Vec<f32x8>) -> Self {
+  pub fn new() -> Self {
+    let coefficients = Coefficients::new();
     let length = coefficients.len();
     debug_assert!(length.is_power_of_two());
 

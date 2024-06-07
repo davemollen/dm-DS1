@@ -1,10 +1,6 @@
-mod coefficients;
 mod fir_filter;
-mod slew_coefficients;
 use {
-  coefficients::Coefficients,
   fir_filter::FirFilter,
-  slew_coefficients::SlewCoefficients,
   std::simd::{f32x8, num::SimdFloat},
 };
 
@@ -18,8 +14,8 @@ pub struct Oversample {
 impl Oversample {
   pub fn new() -> Self {
     Self {
-      upsample_fir: FirFilter::new(SlewCoefficients::new()),
-      downsample_fir: FirFilter::new(Coefficients::new()),
+      upsample_fir: FirFilter::new(),
+      downsample_fir: FirFilter::new(),
     }
   }
 
