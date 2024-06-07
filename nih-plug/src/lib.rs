@@ -11,7 +11,7 @@ struct DmDS1 {
 }
 
 impl DmDS1 {
-  pub fn get_params() -> (f32, f32, f32) {
+  pub fn get_params(&self) -> (f32, f32, f32) {
     (
       self.params.tone.value(),
       self.params.level.value(),
