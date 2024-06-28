@@ -11,13 +11,13 @@ pub struct Clipper {
 impl Clipper {
   pub fn new(sample_rate: f32) -> Self {
     Self {
-      lowpass_filter: OnePoleFilter::new(sample_rate),
+      lowpass_filter: OnePoleFilter::new(sample_rate, 7230.),
       oversample: Oversample::new(),
     }
   }
 
   pub fn process(&mut self, input: f32) -> f32 {
-    let filtered = self.lowpass_filter.process(input, 7230.);
+    let filtered = self.lowpass_filter.process(input);
 
     self.oversample.process(filtered, |x| {
       let x2 = x * x;
