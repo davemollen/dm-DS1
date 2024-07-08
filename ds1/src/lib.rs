@@ -1,4 +1,3 @@
-#![feature(portable_simd)]
 mod transistor_booster;
 use transistor_booster::TransistorBooster;
 mod op_amp;
@@ -9,7 +8,6 @@ mod tone;
 use tone::Tone;
 mod shared {
   pub mod float_ext;
-  pub mod one_pole_filter;
 }
 mod smooth_parameters;
 use smooth_parameters::SmoothParameters;
@@ -27,7 +25,7 @@ impl DS1 {
     Self {
       transistor_booster: TransistorBooster::new(sample_rate),
       op_amp: OpAmp::new(sample_rate),
-      clipper: Clipper::new(sample_rate),
+      clipper: Clipper::new(),
       tone: Tone::new(sample_rate),
       smooth_parameters: SmoothParameters::new(sample_rate),
     }
