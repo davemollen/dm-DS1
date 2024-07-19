@@ -1,3 +1,4 @@
+#![feature(portable_simd)]
 mod transistor_booster;
 use transistor_booster::TransistorBooster;
 mod op_amp;
