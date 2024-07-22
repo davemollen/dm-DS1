@@ -1,5 +1,4 @@
-mod one_pole_filter;
-use one_pole_filter::OnePoleFilter;
+use crate::shared::one_pole_filter::OnePoleFilter;
 
 pub struct Tone {
   lowpass: OnePoleFilter,
