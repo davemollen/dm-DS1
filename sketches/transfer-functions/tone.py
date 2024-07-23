@@ -1,44 +1,70 @@
 from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
+from enum import Enum
 
 # Set the sample rate
 sample_rate = 44100  # in Hz
 
 # Change the tone value to see the difference in the frequency response
 # Keep it between 0 and 1
-tone = 0.5
+tone = 0.75
 
-# Set cutoff frequencies
-low_pass_cutoff = 234.05138689985
-high_pass_cutoff = 1063.8699404538
+def get_s_domain_coefficients(t):
+    # The following transfer function was derived with QsapecNG:
+    # (1-t)*R3 * C1 * C2 * R2 * R4 * V1 * s^2 + ( C1 * R4 * V1 * t*R3 + (1-t)*R3 * C1 * R4 * V1 + C1 * R2 * R4 * V1 + C1 * R1 * R4 * V1 + C1 * R1 * V1 * t*R3 ) * s + ( R4 * V1 + V1 * t*R3 )
+    # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # ( C1 * C2 * R2 * R4 * t*R3 + (1-t)*R3 * C1 * C2 * R2 * R4 + C1 * C2 * R1 * R2 * R4 + C1 * C2 * R1 * R2 * t*R3 + (1-t)*R3 * C1 * C2 * R1 * R2 ) * s^2 + ( C1 * R4 * t*R3 + (1-t)*R3 * C1 * R4 + C1 * R2 * R4 + C1 * R1 * R4 + C1 * R1 * t*R3 + (1-t)*R3 * C1 * R1 + C1 * R1 * R2 + C2 * R2 * R4 + C2 * R2 * t*R3 + (1-t)*R3 * C2 * R2 ) * s + ( R4 + t*R3 + (1-t)*R3 + R2 )
 
-# Apply Butterworth filters
-b_low, a_low = signal.butter(1, low_pass_cutoff, 'low', fs=sample_rate)
-b_high, a_high = signal.butter(1, high_pass_cutoff, 'high', fs=sample_rate)
+    # This function implements this transfer function, but with less repeated calculations.
+
+    R1 = 2200
+    R2 = 6800
+    R3 = 20000
+    R4 = 6800
+    C1 = 2.2e-8
+    C2 = 1e-7
+
+    R3_a = t * R3
+    R3_b = (1-t) * R3
+
+    C1C2 = C1 * C2
+    R2R4 = R2 * R4
+    C1C2R2R4 = C1C2 * R2R4
+    C1C2R1R2 = C1C2 * R1 * R2
+    C1R4 = C1 * R4
+    C1R1 = C1 * R1
+    C2R2 = C2 * R2
+
+    b0 = C1C2R2R4 * R3_a
+    b1 = C1R4 * R3_b + C1R4 * R3_a + C1 * R2R4 + C1R1 * R4 + C1R1 * R3_b
+    b2 = R4 + R3_b
+    a0 = b0 + C1C2R2R4 * R3_b + C1C2R2R4 * R1 + C1C2R1R2 * R3_b + C1C2R1R2 * R3_a
+    a1 = b1 + C1R1 * R3_a + C1R1 * R2 + C2R2 * R4 + C2R2 * R3_b + C2R2 * R3_a
+    a2 = R4 + R3_b + R3_a + R2
+
+    return ([b0, b1, b2], [a0, a1, a2])
+
+# Get s-domain coefficients
+num, den = get_s_domain_coefficients(tone)
+print('s-domain coefficients', (num, den))
+
+# Apply bilinear transform
+b, a = signal.bilinear(num, den, fs=sample_rate)
+print('z-domain coefficients', (list(b), list(a)))
 
 # Get the frequency response
-w_low, h_low = signal.freqz(b_low, a_low, 2**20)
-w_high, h_high = signal.freqz(b_high, a_high, 2**20)
-
-# Apply gains to the frequency response of lowpass and highpass filters
-h_low *= ((1. - tone) * 0.595235 + 0.202379)
-h_high *= (tone * 0.694642 + 0.002896)
-
-# Combine the frequency responses
-h_combined = h_low + h_high
-
-# Convert frequency to Hz
-frequencies = (w_low / (2 * np.pi)) * sample_rate
+w,h = signal.freqz(b, a, 2**20)
+w = w * sample_rate / (2 *np.pi)
 
 # Plot the frequency response
-fig = plt.figure()
+fig1 = plt.figure(1)
 plt.title('Digital filter frequency response')
-plt.semilogx(frequencies, 20 * np.log10(abs(h_combined)), 'b')
+plt.semilogx(w, 20 * np.log10(abs(h)), 'b')
 plt.ylabel('magnitude [dB]')
 plt.xlabel('frequency [Hz]')
 plt.grid()
 plt.axis('tight')
 plt.xlim([10, 20000])
-plt.ylim([-70, 0])
+plt.ylim([-40, 0])
 plt.show()

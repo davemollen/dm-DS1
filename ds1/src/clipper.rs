@@ -1,7 +1,8 @@
 mod fir_filter;
+mod one_pole_filter;
 use {
-  crate::shared::one_pole_filter::OnePoleFilter,
   fir_filter::FirFilter,
+  one_pole_filter::OnePoleFilter,
   std::simd::{f32x8, num::SimdFloat, StdFloat},
 };
 

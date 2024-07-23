@@ -9,7 +9,6 @@ mod tone;
 use tone::Tone;
 mod shared {
   pub mod float_ext;
-  pub mod one_pole_filter;
 }
 mod smooth_parameters;
 use smooth_parameters::SmoothParameters;
