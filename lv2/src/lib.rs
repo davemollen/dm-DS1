@@ -1,6 +1,6 @@
 extern crate ds1;
 extern crate lv2;
-use ds1::DS1;
+use ds1::{Params, DS1};
 use lv2::prelude::*;
 
 #[derive(PortCollection)]
@@ -15,7 +15,7 @@ struct Ports {
 #[uri("https://github.com/davemollen/dm-DS1")]
 struct DmDS1 {
   ds1: DS1,
-  is_active: bool,
+  params: Params,
 }
 
 impl Plugin for DmDS1 {
@@ -28,26 +28,21 @@ impl Plugin for DmDS1 {
 
   // Create a new instance of the plugin; Trivial in this case.
   fn new(_plugin_info: &PluginInfo, _features: &mut ()) -> Option<Self> {
+    let sample_rate = _plugin_info.sample_rate() as f32;
+
     Some(Self {
-      ds1: DS1::new(_plugin_info.sample_rate() as f32),
-      is_active: false,
+      ds1: DS1::new(sample_rate),
+      params: Params::new(sample_rate),
     })
   }
 
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
-    let tone = *ports.tone;
-    let level = *ports.level;
-    let dist = *ports.dist;
-
-    if !self.is_active {
-      self.ds1.initialize_params(tone, level, dist);
-      self.is_active = true;
-    }
+    self.params.set(*ports.tone, *ports.level, *ports.dist);
 
     for (input, output) in ports.input.iter().zip(ports.output.iter_mut()) {
-      *output = self.ds1.process(*input, tone, level, dist);
+      *output = self.ds1.process(*input, &mut self.params);
     }
   }
 }

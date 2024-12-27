@@ -1,4 +1,4 @@
-use ds1::DS1;
+use ds1::{Params as ProcessedParams, DS1};
 use nih_plug::prelude::*;
 use std::sync::Arc;
 mod ds1_parameters;
@@ -8,16 +8,7 @@ mod editor;
 struct DmDS1 {
   params: Arc<DS1Parameters>,
   ds1: DS1,
-}
-
-impl DmDS1 {
-  pub fn get_params(&self) -> (f32, f32, f32) {
-    (
-      self.params.tone.value(),
-      self.params.level.value(),
-      self.params.dist.value(),
-    )
-  }
+  processed_params: ProcessedParams,
 }
 
 impl Default for DmDS1 {
@@ -26,6 +17,7 @@ impl Default for DmDS1 {
     Self {
       params: params.clone(),
       ds1: DS1::new(44100.),
+      processed_params: ProcessedParams::new(44100.),
     }
   }
 }
@@ -66,8 +58,7 @@ impl Plugin for DmDS1 {
     _context: &mut impl InitContext<Self>,
   ) -> bool {
     self.ds1 = DS1::new(buffer_config.sample_rate);
-    let (tone, level, dist) = self.get_params();
-    self.ds1.initialize_params(tone, level, dist);
+    self.processed_params = ProcessedParams::new(buffer_config.sample_rate);
     true
   }
 
@@ -77,12 +68,15 @@ impl Plugin for DmDS1 {
     _aux: &mut AuxiliaryBuffers,
     _context: &mut impl ProcessContext<Self>,
   ) -> ProcessStatus {
-    let (tone, level, dist) = self.get_params();
+    self.processed_params.set(
+      self.params.tone.value(),
+      self.params.level.value(),
+      self.params.dist.value(),
+    );
 
     buffer.iter_samples().for_each(|mut channel_samples| {
       let sample = channel_samples.iter_mut().next().unwrap();
-      let ds1_output = self.ds1.process(*sample, tone, level, dist);
-      *sample = ds1_output;
+      *sample = self.ds1.process(*sample, &mut self.processed_params);
     });
     ProcessStatus::Normal
   }

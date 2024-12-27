@@ -1,5 +1,5 @@
 use crate::ds1_parameters::DS1Parameters;
-use nih_plug::{prelude::GuiContext, params::internals::ParamPtr};
+use nih_plug::{params::internals::ParamPtr, prelude::GuiContext};
 use nih_plug_vizia::vizia::prelude::*;
 use std::sync::Arc;
 pub enum ParamChangeEvent {
