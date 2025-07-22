@@ -1,6 +1,6 @@
 target
 .DS_Store
-*.svg
-*libdm_ds1.so
-*libdm_ds1.dylib
-*libdm_ds1.dll
+flamegraph.svg
+lv2/**/*.so
+lv2/**/*.dylib
+lv2/**/*.dll
