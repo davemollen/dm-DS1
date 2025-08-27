@@ -23,7 +23,7 @@ impl Default for DmDS1 {
 }
 
 impl Plugin for DmDS1 {
-  const NAME: &'static str = "dm-DS1";
+  const NAME: &'static str = "DS1";
   const VENDOR: &'static str = "DM";
   const URL: &'static str = "https://github.com/davemollen/dm-DS1";
   const EMAIL: &'static str = "davemollen@gmail.com";
