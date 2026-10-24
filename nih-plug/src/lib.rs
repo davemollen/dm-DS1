@@ -71,6 +71,7 @@ impl Plugin for DmDS1 {
 
   fn reset(&mut self) {
     self.ds1.reset();
+    self.process_params.reset();
   }
 
   fn process(

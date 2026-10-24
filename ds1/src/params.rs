@@ -1,6 +1,5 @@
 mod smooth;
-use smooth::LinearSmooth;
-pub use smooth::Smoother;
+pub use smooth::{LinearSmooth, Smoother};
 
 pub struct Params {
   pub tone: LinearSmooth,
@@ -17,6 +16,10 @@ impl Params {
       dist: LinearSmooth::new(sample_rate, 20.),
       is_initialized: false,
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.is_initialized = false;
   }
 
   pub fn set(&mut self, tone: f32, level: f32, dist: f32) {

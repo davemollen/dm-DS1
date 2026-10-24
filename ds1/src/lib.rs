@@ -1,4 +1,5 @@
 #![feature(portable_simd)]
+mod bypass;
 mod clipper;
 mod op_amp;
 mod tone;
@@ -8,7 +9,7 @@ mod shared {
   pub mod float_ext;
 }
 mod params;
-pub use params::Params;
+pub use {bypass::Bypass, params::Params};
 use {
   clipper::Clipper, op_amp::OpAmp, params::Smoother, tone::Tone,
   transistor_booster::TransistorBooster,

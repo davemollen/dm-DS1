@@ -1,6 +1,6 @@
 extern crate ds1;
 extern crate lv2;
-use ds1::{Params, DS1};
+use ds1::{Bypass, Params, DS1};
 use lv2::prelude::*;
 
 #[derive(PortCollection)]
@@ -10,12 +10,14 @@ struct Ports {
   dist: InputPort<InPlaceControl>,
   input: InputPort<InPlaceAudio>,
   output: OutputPort<InPlaceAudio>,
+  enabled: InputPort<InPlaceControl>,
 }
 
 #[uri("https://github.com/davemollen/dm-DS1")]
 struct DmDS1 {
   ds1: DS1,
   params: Params,
+  bypass: Bypass,
 }
 
 impl Plugin for DmDS1 {
@@ -33,23 +35,36 @@ impl Plugin for DmDS1 {
     Some(Self {
       ds1: DS1::new(sample_rate),
       params: Params::new(sample_rate),
+      bypass: Bypass::new(sample_rate),
     })
   }
 
   /// Reset the internal state of the plugin.
   fn activate(&mut self, _features: &mut Self::InitFeatures) {
     self.ds1.reset();
+    self.params.reset();
+    self.bypass.reset();
   }
 
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
+    self.bypass.set_enabled(ports.enabled.get() == 0., || {
+      self.ds1.reset();
+      self.params.reset();
+    });
     self
       .params
       .set(ports.tone.get(), ports.level.get(), ports.dist.get());
 
     for (input, output) in ports.input.iter().zip(ports.output.iter()) {
-      let ds1_output = self.ds1.process(input.get(), &mut self.params);
+      let dry = input.get();
+      let ds1_output = if self.bypass.is_enabled() {
+        dry
+      } else {
+        let wet = self.ds1.process(dry, &mut self.params);
+        self.bypass.process(dry, wet)
+      };
       output.set(ds1_output);
     }
   }
