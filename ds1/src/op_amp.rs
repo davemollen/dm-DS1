@@ -22,6 +22,11 @@ impl OpAmp {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.z1 = 0.;
+    self.z2 = 0.;
+  }
+
   pub fn process(&mut self, input: f32, dist: f32) -> f32 {
     let dist = dist.max(0.00001);
 

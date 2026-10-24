@@ -1,8 +1,7 @@
 use std::f32::consts::TAU;
 mod bilinear_transform;
+use crate::shared::biquad_filter::BiquadFilter;
 use bilinear_transform::BilinearTransform;
-mod filter;
-use filter::Filter;
 
 const FREQ_1: f32 = 3.3862753849339;
 const FREQ_2: f32 = 673.449;
@@ -10,7 +9,7 @@ const GAIN: f32 = 63.095734;
 
 pub struct TransistorBooster {
   bilinear_transform: BilinearTransform,
-  filter: Filter,
+  filter: BiquadFilter,
 }
 
 impl TransistorBooster {
@@ -22,8 +21,12 @@ impl TransistorBooster {
   pub fn new(sample_rate: f32) -> Self {
     Self {
       bilinear_transform: BilinearTransform::new(sample_rate),
-      filter: Filter::new(),
+      filter: BiquadFilter::new(),
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.filter.reset();
   }
 
   pub fn process(&mut self, input: f32) -> f32 {

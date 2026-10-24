@@ -36,6 +36,11 @@ impl Plugin for DmDS1 {
     })
   }
 
+  /// Reset the internal state of the plugin.
+  fn activate(&mut self, _features: &mut Self::InitFeatures) {
+    self.ds1.reset();
+  }
+
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
   // iterates over.
   fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {

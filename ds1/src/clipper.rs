@@ -21,6 +21,12 @@ impl Clipper {
     }
   }
 
+  pub fn reset(&mut self) {
+    self.lowpass_filter.reset();
+    self.upsample_fir.reset();
+    self.downsample_fir.reset();
+  }
+
   pub fn process(&mut self, input: f32) -> f32 {
     let filtered = self.lowpass_filter.process(input);
     let upsampled = self.upsample_fir.upsample(filtered * 2.05);

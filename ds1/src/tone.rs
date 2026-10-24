@@ -1,6 +1,6 @@
 mod bilinear_transform;
-mod biquad_filter;
-use {bilinear_transform::BilinearTransform, biquad_filter::BiquadFilter};
+use crate::shared::biquad_filter::BiquadFilter;
+use bilinear_transform::BilinearTransform;
 
 const R1: f32 = 2200.;
 const R2: f32 = 6800.;
@@ -28,6 +28,10 @@ impl Tone {
       bilinear_transform: BilinearTransform::new(sample_rate),
       filter: BiquadFilter::new(),
     }
+  }
+
+  pub fn reset(&mut self) {
+    self.filter.reset();
   }
 
   pub fn process(&mut self, input: f32, tone: f32) -> f32 {

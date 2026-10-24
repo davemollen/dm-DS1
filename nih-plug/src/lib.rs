@@ -69,6 +69,10 @@ impl Plugin for DmDS1 {
     true
   }
 
+  fn reset(&mut self) {
+    self.ds1.reset();
+  }
+
   fn process(
     &mut self,
     buffer: &mut Buffer,
