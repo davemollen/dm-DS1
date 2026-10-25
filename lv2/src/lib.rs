@@ -48,23 +48,25 @@ impl Plugin for DmDS1 {
 
   // Process a chunk of audio. The audio ports are dereferenced to slices, which the plugin
   // iterates over.
-  fn run(&mut self, ports: &mut Ports, _features: &mut (), _sample_count: u32) {
+  fn run(&mut self, ports: &mut Ports, _features: &mut (), sample_count: u32) {
     self.bypass.set_enabled(ports.enabled.get() == 0., || {
       self.ds1.reset();
       self.params.reset();
     });
+
+    if self.bypass.is_done_activating() {
+      ports.output.copy_from(&ports.input, sample_count);
+      return;
+    }
+
     self
       .params
       .set(ports.tone.get(), ports.level.get(), ports.dist.get());
 
     for (input, output) in ports.input.iter().zip(ports.output.iter()) {
       let dry = input.get();
-      let ds1_output = if self.bypass.is_enabled() {
-        dry
-      } else {
-        let wet = self.ds1.process(dry, &mut self.params);
-        self.bypass.process(dry, wet)
-      };
+      let wet = self.ds1.process(dry, &mut self.params);
+      let ds1_output = self.bypass.process(dry, wet);
       output.set(ds1_output);
     }
   }
