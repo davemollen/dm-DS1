@@ -8,19 +8,18 @@ const FREQ_2: f32 = 673.449;
 const GAIN: f32 = 63.095734;
 
 pub struct TransistorBooster {
-  bilinear_transform: BilinearTransform,
+  z_domain_coefficients: ([f32; 3], [f32; 3]),
   filter: BiquadFilter,
 }
 
 impl TransistorBooster {
-  const W1: f32 = FREQ_1 * TAU;
-  const W2: f32 = FREQ_2 * TAU;
-  const A1: f32 = Self::W1 + Self::W2;
-  const A2: f32 = Self::W1 * Self::W2;
-
   pub fn new(sample_rate: f32) -> Self {
+    let s_domain_coefficients = Self::get_s_domain_coefficients();
+    let bilinear_transform = BilinearTransform::new(sample_rate);
+    let z_domain_coefficients = bilinear_transform.process(s_domain_coefficients);
+
     Self {
-      bilinear_transform: BilinearTransform::new(sample_rate),
+      z_domain_coefficients,
       filter: BiquadFilter::new(),
     }
   }
@@ -30,12 +29,14 @@ impl TransistorBooster {
   }
 
   pub fn process(&mut self, input: f32) -> f32 {
-    let s_domain_coefficients = self.get_s_domain_coefficients();
-    let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
-    self.filter.process(input, z_domain_coefficients) * GAIN
+    self.filter.process(input, self.z_domain_coefficients) * GAIN
   }
 
-  fn get_s_domain_coefficients(&self) -> (f32, [f32; 3]) {
-    (1., [1., Self::A1, Self::A2])
+  fn get_s_domain_coefficients() -> (f32, [f32; 3]) {
+    let w1 = FREQ_1 * TAU;
+    let w2 = FREQ_2 * TAU;
+    let a1 = w1 + w2;
+    let a2 = w1 * w2;
+    (1., [1., a1, a2])
   }
 }

@@ -23,6 +23,8 @@ impl Params {
   }
 
   pub fn set(&mut self, tone: f32, level: f32, dist: f32) {
+    let dist = dist.max(0.00001);
+
     if self.is_initialized {
       self.tone.set_target(tone);
       self.level.set_target(level);

@@ -12,6 +12,8 @@ const C2: f32 = 1e-7;
 pub struct Tone {
   bilinear_transform: BilinearTransform,
   filter: BiquadFilter,
+  prev_tone: Option<f32>,
+  z_domain_coefficients: ([f32; 3], [f32; 3]),
 }
 
 impl Tone {
@@ -27,6 +29,8 @@ impl Tone {
     Self {
       bilinear_transform: BilinearTransform::new(sample_rate),
       filter: BiquadFilter::new(),
+      prev_tone: None,
+      z_domain_coefficients: ([0.; 3], [0.; 3]),
     }
   }
 
@@ -35,9 +39,12 @@ impl Tone {
   }
 
   pub fn process(&mut self, input: f32, tone: f32) -> f32 {
-    let s_domain_coefficients = Self::get_s_domain_coefficients(tone);
-    let z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
-    self.filter.process(input, z_domain_coefficients)
+    if self.prev_tone.map_or(true, |value| value != tone) {
+      let s_domain_coefficients = Self::get_s_domain_coefficients(tone);
+      self.z_domain_coefficients = self.bilinear_transform.process(s_domain_coefficients);
+      self.prev_tone = Some(tone);
+    }
+    self.filter.process(input, self.z_domain_coefficients)
   }
 
   fn get_s_domain_coefficients(tone: f32) -> ([f32; 3], [f32; 3]) {
